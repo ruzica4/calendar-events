@@ -1,4 +1,6 @@
 import datetime
+import enum
+import random
 
 from calendar_webapp import db
 
@@ -14,67 +16,45 @@ class User(db.Model):
         self.username = username
 
     def __repr__(self):
-        return '<User> {}'.format(self.username)
+        return '<User: username={}>'.format(self.username)
+
+
+class EventType(enum.Enum):
+    BIRTHDAY = 'Birthday'
+    MEETING = 'Meeting'
+    REMINDER = 'Reminder'
+
+    event_id = db.Column(db.Integer(), db.ForeignKey('event.id'))
+
+    @classmethod
+    def get_random_event(cls):
+        return random.choice([EventType.REMINDER, EventType.BIRTHDAY, EventType.MEETING])
 
 
 class Event(db.Model):
     __tablename__ = 'event'
     id = db.Column(db.Integer(), primary_key=True)
-    event_title = db.Column(db.String(255), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
     created_time = db.Column(db.DateTime, default=datetime.datetime.now())
+    description = db.Column(db.String(255))
+    date_of_event = db.Column(db.DateTime, nullable=False)
+    remind_me_before_days = db.Column(db.Integer())
+    type = db.Column(
+        db.Enum(EventType),
+        default=EventType.REMINDER,
+        nullable=False
+    )
+    #
+    # values_callable=lambda x: [str(member.value) for member in EventType]),
+    #                    default=EventType.REMINDER)
 
     user_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
-    events = db.relationship('EventType', backref='event', lazy='dynamic')
+    # user = db.relationship('User', back_populates='event')
 
     # modified_time - maybe it should be implemented
 
-    def __init__(self, event_title=""):
-        self.event_title = event_title
+    def __init__(self, title=""):
+        self.title = title
 
     def __repr__(self):
-        return '<Event {}>'.format(self.event_name)
-
-
-class EventType(db.Model):
-    __tablename__ = 'event_type'
-    id = db.Column(db.Integer(), primary_key=True)
-    event_description = db.Column(db.String(255))
-    date_of_event = db.Column(db.DateTime, nullable=False)
-    type = db.Column('type', db.String(50))
-
-    event_id = db.Column(db.Integer(), db.ForeignKey('event.id'))
-
-    def __repr__(self):
-        return f'<{self.__class__.__name__}(event_date={self.event_date})>'
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'event_type',
-        'polymorphic_on': type
-    }
-
-
-class Meeting(EventType):
-    __tablename__ = 'meeting'
-    event_type_id = db.Column(db.Integer(), ForeignKey='event_type.if')
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'meeting',
-    }
-
-
-class Birthday(EventType):
-    __tablename__ = 'birthday'
-    event_type_id = db.Column(db.Integer(), ForeignKey='event_type.if')
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'birthday',
-    }
-
-
-class Reminder(EventType):
-    __tablename__ = 'reminder'
-    event_type_id = db.Column(db.Integer(), ForeignKey='event_type.if')
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'reminder',
-    }
+        return '<Event: title={}>'.format(self.title)
