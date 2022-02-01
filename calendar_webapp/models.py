@@ -59,10 +59,6 @@ class EventType(enum.Enum):
     def get_random_event(cls):
         return random.choice([EventType.REMINDER, EventType.BIRTHDAY, EventType.MEETING])
 
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
-
 
 class Event(db.Model):
     """
