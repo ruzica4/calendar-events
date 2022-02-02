@@ -59,11 +59,8 @@ class EventType(enum.Enum):
     def get_random_event(cls):
         return random.choice([EventType.REMINDER, EventType.BIRTHDAY, EventType.MEETING])
 
-    @classmethod
-    def list(cls):
-        return list(map(lambda c: c.value, cls))
 
-
+# TODO change date_of_event field properties
 class Event(db.Model):
     """
     creates Event table
@@ -74,7 +71,7 @@ class Event(db.Model):
     title = db.Column(db.String(255), nullable=False)
     created_time = db.Column(db.DateTime, default=datetime.datetime.now())
     description = db.Column(db.String(255))
-    date_of_event = db.Column(db.DateTime, nullable=False)
+    date_of_event = db.Column(db.DateTime, default=datetime.datetime.now())
     remind_me_before_days = db.Column(db.Integer())
     type = db.Column(
         db.Enum(EventType),
@@ -86,8 +83,8 @@ class Event(db.Model):
 
     # modified_time - maybe this should be implemented
 
-    def __init__(self, title=""):
-        self.title = title
+    # def __init__(self, title=""):
+    #     self.title = title
 
     def __repr__(self):
         return '<Event: title={}>'.format(self.title)
